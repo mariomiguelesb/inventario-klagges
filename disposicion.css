@@ -1,0 +1,168 @@
+/* ============================================================
+ * Archivo: disposicion.css
+ * Dónde va: GitHub, repositorio inventario-klagges (raíz)
+ * Entrega 2B-1 · Hito 2 · versión 0.2.0
+ * ============================================================
+ * Cómo se ordena la app según el ancho de la pantalla (los colores y componentes están en styles.css):
+ * - Celular (menos de 600 px): barra inferior de 5 botones, con Movimiento al centro.
+ * - Tableta, plegable abierto o celular girado (600 a 1.023 px): riel lateral con íconos.
+ * - Computador (1.024 px o más): menú lateral con la marca, "Nuevo movimiento" y el usuario.
+ * - Desde 1.100 px, la ficha de un artículo se abre al costado de la lista.
+ * La franja DATOS DE PRUEBA queda siempre arriba; app.js agrega la clase con-franja al <body>.
+ */
+
+html { height: 100%; }
+body {
+  min-height: 100%; display: flex; flex-direction: column;
+  padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right);
+}
+body.con-franja { --alto-franja: 28px; }
+.franja-prueba { position: sticky; top: 0; z-index: 40; height: 28px; min-height: 0; }
+
+.app {
+  flex: 1 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto 1fr;
+  grid-template-areas: "encabezado" "contenido";
+}
+.encabezado {
+  grid-area: encabezado; position: sticky; top: var(--alto-franja, 0px); z-index: 20;
+  display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 16px;
+  background: var(--superficie); border-bottom: 1px solid var(--borde);
+}
+.encabezado__titulo { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.encabezado__marca { width: 32px; height: 32px; flex: 0 0 auto; border-radius: 8px; }
+.contenido { grid-area: contenido; min-width: 0; padding: 16px 16px calc(104px + env(safe-area-inset-bottom)); }
+.contenido:focus { outline: none; }
+.vista { display: flex; flex-direction: column; gap: 16px; width: 100%; max-width: 1440px; }
+
+/* Sin sesión (pantalla de ingreso): sin navegación ni encabezado, en cualquier ancho */
+.app[data-sesion="no"] { grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr; grid-template-areas: "contenido"; }
+.app[data-sesion="no"] .navegacion,
+.app[data-sesion="no"] .encabezado { display: none; }
+.app[data-sesion="no"] .contenido { padding: 0; }
+
+/* ---------- Celular: barra inferior ---------- */
+.navegacion {
+  grid-area: navegacion;
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+  background: var(--superficie); border-top: 1px solid var(--borde);
+}
+.navegacion__marca,
+.navegacion__usuario,
+.navegacion__etiqueta--larga { display: none; }
+.navegacion__lista {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: end;
+}
+.navegacion__item {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; min-height: 56px; padding-top: 4px;
+  color: var(--texto-suave); text-decoration: none; text-align: center; font-size: 0.8125rem; font-weight: 600;
+}
+.navegacion__icono {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 56px; height: 30px; border-radius: 15px;
+}
+.navegacion__item[aria-current="page"] { color: var(--sobre-primario-suave); font-weight: 750; }
+.navegacion__item[aria-current="page"] .navegacion__icono { background: var(--primario-suave); }
+.navegacion__item--movimiento { margin-top: -26px; color: var(--texto); }
+.navegacion__item--movimiento .navegacion__icono,
+.navegacion__item--movimiento[aria-current="page"] .navegacion__icono {
+  width: 58px; height: 58px; border-radius: 29px;
+  background: var(--primario); color: var(--sobre-primario); box-shadow: var(--sombra-flotante);
+}
+.aviso { bottom: calc(92px + env(safe-area-inset-bottom)); }
+
+/* Lista con ficha (Inventario): en pantallas angostas la ficha se muestra sola */
+.con-panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; align-items: start; }
+
+/* Columnas de tabla que se ocultan cuando falta espacio (por ejemplo, Categoría) */
+@media (max-width: 1023px) {
+  .col-amplia { display: none; }
+}
+
+/* ---------- Tableta, plegable abierto o celular girado: riel lateral ---------- */
+@media (min-width: 600px) {
+  .app {
+    grid-template-columns: 96px minmax(0, 1fr);
+    grid-template-areas: "navegacion encabezado" "navegacion contenido";
+  }
+  .navegacion {
+    position: sticky; top: var(--alto-franja, 0px); align-self: start;
+    height: calc(100vh - var(--alto-franja, 0px)); height: calc(100dvh - var(--alto-franja, 0px));
+    overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding: 16px 8px;
+    border-top: 0; border-right: 1px solid var(--borde);
+  }
+  .navegacion__lista { display: flex; flex-direction: column; align-items: stretch; gap: 6px; }
+  .navegacion__li-movimiento { order: -1; margin-bottom: 10px; }
+  .navegacion__item { min-height: 64px; }
+  .navegacion__item--movimiento { margin-top: 0; }
+  .navegacion__item--movimiento .navegacion__icono,
+  .navegacion__item--movimiento[aria-current="page"] .navegacion__icono { width: 56px; height: 56px; }
+  .encabezado { padding: 8px 24px; }
+  .contenido { padding: 20px 24px 40px; }
+  .aviso { bottom: 24px; }
+}
+
+/* ---------- Computador: menú lateral ---------- */
+@media (min-width: 1024px) {
+  .app { grid-template-columns: 252px minmax(0, 1fr); }
+  .navegacion {
+    gap: 20px; padding: 20px 14px;
+    background: var(--lateral); color: var(--sobre-lateral); border-right-color: var(--lateral-linea);
+  }
+  .navegacion__marca { display: flex; padding: 0 6px; }
+  .navegacion__marca .marca__empresa { color: var(--lateral-suave); }
+  .navegacion__lista { gap: 4px; }
+  .navegacion__li-movimiento { margin-bottom: 14px; }
+  .navegacion__item {
+    flex-direction: row; justify-content: flex-start; gap: 12px; min-height: 46px; padding: 0 12px;
+    border-radius: 10px; color: var(--sobre-lateral); font-size: 1rem; font-weight: 600; text-align: left;
+  }
+  .navegacion__icono,
+  .navegacion__item[aria-current="page"] .navegacion__icono { width: auto; height: auto; background: none; }
+  .navegacion__item[aria-current="page"] { background: var(--lateral-activo); color: var(--sobre-lateral); }
+  .navegacion__item--movimiento,
+  .navegacion__item--movimiento[aria-current="page"] {
+    justify-content: center; min-height: 48px; border-radius: 12px;
+    background: var(--boton-lateral); color: var(--sobre-boton-lateral); font-weight: 700;
+  }
+  .navegacion__item--movimiento .navegacion__icono,
+  .navegacion__item--movimiento[aria-current="page"] .navegacion__icono {
+    width: auto; height: auto; background: none; color: inherit; box-shadow: none;
+  }
+  .navegacion__etiqueta--corta { display: none; }
+  .navegacion__etiqueta--larga { display: inline; }
+  .navegacion__usuario {
+    display: flex; align-items: center; gap: 10px; margin-top: auto; padding: 14px 6px 0;
+    border-top: 1px solid var(--lateral-linea);
+  }
+  .usuario__avatar {
+    display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+    width: 38px; height: 38px; border-radius: 50%; background: var(--lateral-activo); font-weight: 700;
+  }
+  .usuario__datos { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
+  .usuario__nombre { font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .usuario__rol { font-size: 0.875rem; color: var(--lateral-suave); }
+  .encabezado { min-height: 64px; padding: 12px 32px; }
+  .encabezado__marca { display: none; }
+  .contenido { padding: 24px 32px 48px; }
+}
+@media (min-width: 1024px) and (hover: hover) {
+  .navegacion__item:hover { background: var(--lateral-activo); }
+  .navegacion__item--movimiento:hover { background: var(--boton-lateral); filter: brightness(0.95); }
+}
+
+/* ---------- Ficha al costado de la lista ---------- */
+@media (min-width: 1100px) {
+  .con-panel--abierto { grid-template-columns: minmax(0, 1fr) minmax(320px, 380px); }
+  .con-panel__panel {
+    position: sticky; top: calc(var(--alto-franja, 0px) + 84px);
+    max-height: calc(100vh - var(--alto-franja, 0px) - 100px); overflow-y: auto;
+  }
+}
+@media (min-width: 1100px) and (max-width: 1499px) {
+  .con-panel--abierto .col-amplia { display: none; }
+}
